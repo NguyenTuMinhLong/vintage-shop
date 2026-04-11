@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --page-bg: #f4efe7;
+  --paper: #fbf8f2;
+  --panel: #e8e0d4;
+  --ink: #1e1813;
+  --muted: #6d6358;
+  --line: #d4c8b8;
+  --line-strong: #b7a897;
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+    "URW Palladio L", serif;
+  --font-body: "Aptos", "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+html {
+  background: var(--page-bg);
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.65), transparent 32%),
+    linear-gradient(180deg, #f6f1e9 0%, var(--page-bg) 42%, #efe6d8 100%);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.vertical-writing {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
