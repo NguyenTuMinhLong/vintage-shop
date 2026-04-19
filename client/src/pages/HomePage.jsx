@@ -1,28 +1,6 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const featuredProducts = [
-  {
-    id: 1,
-    name: "French Workwear Jacket",
-    price: "$168",
-    image:
-      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: 2,
-    name: "Selvedge Carpenter Pant",
-    price: "$142",
-    image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: 3,
-    name: "Soft Tailored Coat",
-    price: "$214",
-    image:
-      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1200&q=80",
-  },
-];
+import { api } from "../api/axios";
 
 const collectionNotes = [
   "Rare denim",
@@ -32,6 +10,27 @@ const collectionNotes = [
 ];
 
 export default function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoadingFeatured(true);
+        const res = await api.get("/products", {
+          params: { page: 1, limit: 6, search: "" },
+        });
+        setFeaturedProducts((res.data?.products ?? []).slice(0, 3));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingFeatured(false);
+      }
+    };
+
+    load();
+  }, []);
+
   return (
     <div className="space-y-20 pb-14 md:space-y-24">
       <section className="grid gap-8 border-b border-[var(--line)] pb-10 lg:grid-cols-[120px_minmax(0,1fr)_260px] lg:items-start">
@@ -210,11 +209,14 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {featuredProducts.map((item) => (
+          {loadingFeatured ? (
+            <div className="col-span-full text-sm text-[var(--muted)]">Loading featured pieces...</div>
+          ) : (
+            featuredProducts.map((item) => (
             <article key={item.id} className="group space-y-4">
               <div className="overflow-hidden border border-[var(--line)] bg-[var(--panel)]">
                 <img
-                  src={item.image}
+                  src={item.imageUrl}
                   alt={item.name}
                   className="aspect-[4/5] h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                 />
@@ -228,15 +230,19 @@ export default function HomePage() {
                   >
                     {item.name}
                   </h3>
-                  <p className="mt-1 text-sm text-[var(--muted)]">{item.price}</p>
+                  <p className="mt-1 text-sm text-[var(--muted)]">${item.price ?? 0}</p>
                 </div>
 
-                <button className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted)] transition hover:text-[var(--ink)]">
+                <Link
+                  to={`/products/${item.id}`}
+                  className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted)] transition hover:text-[var(--ink)]"
+                >
                   View
-                </button>
+                </Link>
               </div>
             </article>
-          ))}
+          ))
+          )}
         </div>
       </section>
 

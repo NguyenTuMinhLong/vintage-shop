@@ -1,7 +1,7 @@
 import express from "express";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { prisma } from "../lib/prisma.js";
+import { createUser, findUserByEmail } from "../lib/store.js";
 
 const router = express.Router();
 
@@ -13,9 +13,9 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Name, email, and password are required" });
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email.trim() },
-    });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = findUserByEmail(normalizedEmail);
 
     if (existingUser) {
       return res.status(400).json({ error: "Email already exists" });
@@ -23,12 +23,10 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
-        name: name.trim(),
-        email: email.trim(),
-        password: hashedPassword,
-      },
+    const user = createUser({
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
     });
 
     res.status(201).json({
@@ -53,9 +51,9 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.trim() },
-    });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = findUserByEmail(normalizedEmail);
 
     if (!user) {
       return res.status(400).json({ error: "Invalid credentials" });

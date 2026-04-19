@@ -28,6 +28,12 @@ model Product {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
+  measurementsText String?
+  conditionText    String?
+  overallScore     Float?
+  materials        String?
+  sashikoNotes     String?
+  careInstructions String?
   price       Float
   stock       Int
   imageUrl    String?

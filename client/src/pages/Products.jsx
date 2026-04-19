@@ -1,16 +1,25 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../api/axios";
-import { getStoredToken } from "../utils/auth";
 
 export default function Products() {
-  const token = getStoredToken();
-
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({
     name: "",
     price: "",
     stock: "",
     imageUrl: "",
+    description: "",
+    measurementsText: "",
+    conditionText: "",
+    overallScore: "",
+    materials: "",
+    sashikoNotes: "",
+    careInstructions: "",
+    patchZones: "",
+    patchFabric: "",
+    patchStyle: "visible",
+    patchNotes: "",
+    repairDifficulty: "medium",
   });
   const [editingId, setEditingId] = useState(null);
 
@@ -26,7 +35,7 @@ export default function Products() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const fetchProducts = async (currentPage = page, currentSearch = search) => {
+  const fetchProducts = useCallback(async (currentPage, currentSearch) => {
     try {
       setLoading(true);
       setError("");
@@ -39,19 +48,22 @@ export default function Products() {
         },
       });
 
-      setProducts(res.data.products);
-      setTotalPages(res.data.totalPages || 1);
+      const nextProducts = Array.isArray(res.data?.products) ? res.data.products : [];
+      setProducts(nextProducts);
+      setTotalPages(res.data?.totalPages || 1);
     } catch (err) {
       console.error(err);
       setError("Failed to load products");
+      setProducts([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit]);
 
   useEffect(() => {
     fetchProducts(page, search);
-  }, [page, search]);
+  }, [page, search, fetchProducts]);
 
   const resetForm = () => {
     setForm({
@@ -59,6 +71,18 @@ export default function Products() {
       price: "",
       stock: "",
       imageUrl: "",
+      description: "",
+      measurementsText: "",
+      conditionText: "",
+      overallScore: "",
+      materials: "",
+      sashikoNotes: "",
+      careInstructions: "",
+      patchZones: "",
+      patchFabric: "",
+      patchStyle: "visible",
+      patchNotes: "",
+      repairDifficulty: "medium",
     });
     setEditingId(null);
   };
@@ -89,6 +113,18 @@ export default function Products() {
         price: Number(form.price) || 0,
         stock: Number(form.stock) || 0,
         imageUrl: form.imageUrl,
+        description: form.description?.trim() || null,
+        measurementsText: form.measurementsText?.trim() || null,
+        conditionText: form.conditionText?.trim() || null,
+        overallScore: form.overallScore?.trim() ? Number(form.overallScore) : null,
+        materials: form.materials?.trim() || null,
+        sashikoNotes: form.sashikoNotes?.trim() || null,
+        careInstructions: form.careInstructions?.trim() || null,
+        patchZones: form.patchZones?.trim() || null,
+        patchFabric: form.patchFabric?.trim() || null,
+        patchStyle: form.patchStyle?.trim() || null,
+        patchNotes: form.patchNotes?.trim() || null,
+        repairDifficulty: form.repairDifficulty?.trim() || null,
       };
 
       if (editingId) {
@@ -116,6 +152,21 @@ export default function Products() {
       price: product.price ?? "",
       stock: product.stock ?? "",
       imageUrl: product.imageUrl || "",
+      description: product.description ?? "",
+      measurementsText: product.measurementsText ?? "",
+      conditionText: product.conditionText ?? "",
+      overallScore:
+        product.overallScore === null || product.overallScore === undefined
+          ? ""
+          : String(product.overallScore),
+      materials: product.materials ?? "",
+      sashikoNotes: product.sashikoNotes ?? "",
+      careInstructions: product.careInstructions ?? "",
+      patchZones: product.patchZones ?? "",
+      patchFabric: product.patchFabric ?? "",
+      patchStyle: product.patchStyle ?? "visible",
+      patchNotes: product.patchNotes ?? "",
+      repairDifficulty: product.repairDifficulty ?? "medium",
     });
     setSuccess("");
     setError("");
@@ -159,10 +210,10 @@ export default function Products() {
       <section className="flex flex-col gap-4 border-b border-[#d8d2ca] pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="mb-3 text-xs uppercase tracking-[0.24em] text-[#6f6a63]">
-            Shop
+            Inventory
           </p>
           <h1 className="text-4xl" style={{ fontFamily: "serif" }}>
-            Product Archive
+            Inventory Studio
           </h1>
         </div>
 
@@ -190,88 +241,188 @@ export default function Products() {
         </form>
       </section>
 
-      {!token && (
-        <div className="border border-[#d8d2ca] bg-[#f8f6f2] p-4 text-sm text-[#6f6a63]">
-          Browse is public. Login to add, edit, and delete products.
+      <section className="grid gap-6 border border-[#d8d2ca] bg-[#f8f6f2] p-6 lg:grid-cols-2">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.24em] text-[#6f6a63]">Admin Studio</p>
+          <h2 className="text-3xl" style={{ fontFamily: "serif" }}>
+            {editingId ? "Edit Product" : "Add Product"}
+          </h2>
+          <p className="max-w-md text-sm text-[#6f6a63]">
+            Keep the catalog tight and image-forward. Add measurements + condition notes so customers can read
+            the piece before they buy. Patch fields below let you describe exactly how a repair should be
+            added to the garment.
+          </p>
         </div>
-      )}
 
-      {token && (
-        <section className="grid gap-6 border border-[#d8d2ca] bg-[#f8f6f2] p-6 lg:grid-cols-2">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.24em] text-[#6f6a63]">
-              Admin Studio
-            </p>
-            <h2 className="text-3xl" style={{ fontFamily: "serif" }}>
-              {editingId ? "Edit Product" : "Add Product"}
-            </h2>
-            <p className="max-w-md text-sm text-[#6f6a63]">
-              Keep the catalog tight and image-forward. Use clean titles and one strong visual per item.
-            </p>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="text"
+            name="name"
+            placeholder="Product name"
+            value={form.name}
+            onChange={handleChange}
+            className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+          <input
+            type="number"
+            name="price"
+            placeholder="Price"
+            value={form.price}
+            onChange={handleChange}
+            className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+          <input
+            type="number"
+            name="stock"
+            placeholder="Stock"
+            value={form.stock}
+            onChange={handleChange}
+            className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+          <input
+            type="text"
+            name="imageUrl"
+            placeholder="Image URL"
+            value={form.imageUrl}
+            onChange={handleChange}
+            className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+
+          <textarea
+            name="description"
+            placeholder="Description (editorial notes, materials, fabric feel)"
+            value={form.description}
+            onChange={handleChange}
+            rows={4}
+            className="w-full resize-none border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+          <textarea
+            name="measurementsText"
+            placeholder="Measurements (e.g. Pit to pit, Front length, Back length)"
+            value={form.measurementsText}
+            onChange={handleChange}
+            rows={3}
+            className="w-full resize-none border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <textarea
+              name="conditionText"
+              placeholder="Condition notes (defects, wear points, repairs)"
+              value={form.conditionText}
+              onChange={handleChange}
+              rows={3}
+              className="resize-none border border-[#d8d2ca] bg-white p-3 outline-none"
+            />
+            <input
+              type="number"
+              name="overallScore"
+              placeholder="Overall score (/10)"
+              value={form.overallScore}
+              onChange={handleChange}
+              className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="text"
+            name="materials"
+            placeholder="Materials (optional)"
+            value={form.materials}
+            onChange={handleChange}
+            className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+          <textarea
+            name="sashikoNotes"
+            placeholder="Sashiko notes (what to reinforce, where, thread suggestion)"
+            value={form.sashikoNotes}
+            onChange={handleChange}
+            rows={3}
+            className="w-full resize-none border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+          <textarea
+            name="patchZones"
+            placeholder="Patch zones (e.g. left elbow, right cuff edge, back hem split)"
+            value={form.patchZones}
+            onChange={handleChange}
+            rows={3}
+            className="w-full resize-none border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
             <input
               type="text"
-              name="name"
-              placeholder="Product name"
-              value={form.name}
+              name="patchFabric"
+              placeholder="Patch fabric (e.g. indigo chambray, herringbone twill)"
+              value={form.patchFabric}
               onChange={handleChange}
               className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
             />
-            <input
-              type="number"
-              name="price"
-              placeholder="Price"
-              value={form.price}
+            <select
+              name="patchStyle"
+              value={form.patchStyle}
               onChange={handleChange}
               className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
-            />
-            <input
-              type="number"
-              name="stock"
-              placeholder="Stock"
-              value={form.stock}
+            >
+              <option value="visible">Visible repair</option>
+              <option value="blended">Blended repair</option>
+              <option value="boro-stack">Boro stack</option>
+            </select>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <select
+              name="repairDifficulty"
+              value={form.repairDifficulty}
               onChange={handleChange}
               className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
-            />
-            <input
-              type="text"
-              name="imageUrl"
-              placeholder="Image URL"
-              value={form.imageUrl}
+            >
+              <option value="low">Repair difficulty: Low</option>
+              <option value="medium">Repair difficulty: Medium</option>
+              <option value="high">Repair difficulty: High</option>
+            </select>
+            <textarea
+              name="patchNotes"
+              placeholder="Patch notes (shape, overlap, story, stitch mood)"
+              value={form.patchNotes}
               onChange={handleChange}
-              className="w-full border border-[#d8d2ca] bg-white p-3 outline-none"
+              rows={3}
+              className="w-full resize-none border border-[#d8d2ca] bg-white p-3 outline-none"
             />
+          </div>
+          <textarea
+            name="careInstructions"
+            placeholder="Care instructions (how to wash/air/brush + repair mindset)"
+            value={form.careInstructions}
+            onChange={handleChange}
+            rows={3}
+            className="w-full resize-none border border-[#d8d2ca] bg-white p-3 outline-none"
+          />
 
-            <div className="flex gap-2">
+          <div className="flex gap-2 pt-2">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="border border-[#1d1b19] px-5 py-3 text-xs uppercase tracking-[0.16em] disabled:opacity-50"
+            >
+              {submitting
+                ? editingId
+                  ? "Updating..."
+                  : "Adding..."
+                : editingId
+                ? "Update Product"
+                : "Add Product"}
+            </button>
+
+            {editingId && (
               <button
-                type="submit"
-                disabled={submitting}
-                className="border border-[#1d1b19] px-5 py-3 text-xs uppercase tracking-[0.16em] disabled:opacity-50"
+                type="button"
+                onClick={resetForm}
+                className="border border-[#d8d2ca] px-5 py-3 text-xs uppercase tracking-[0.16em]"
               >
-                {submitting
-                  ? editingId
-                    ? "Updating..."
-                    : "Adding..."
-                  : editingId
-                  ? "Update Product"
-                  : "Add Product"}
+                Cancel
               </button>
-
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="border border-[#d8d2ca] px-5 py-3 text-xs uppercase tracking-[0.16em]"
-                >
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
-        </section>
-      )}
+            )}
+          </div>
+        </form>
+      </section>
 
       {error && <p className="text-red-600">{error}</p>}
       {success && <p className="text-green-700">{success}</p>}
@@ -307,22 +458,20 @@ export default function Products() {
                   <p className="text-sm text-[#6f6a63]">Stock: {p.stock ?? 0}</p>
                 </div>
 
-                {token && (
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => handleEdit(p)}
-                      className="text-xs uppercase tracking-[0.16em] text-[#6f6a63] hover:text-[#1d1b19]"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="text-xs uppercase tracking-[0.16em] text-[#6f6a63] hover:text-[#1d1b19]"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => handleEdit(p)}
+                    className="text-xs uppercase tracking-[0.16em] text-[#6f6a63] hover:text-[#1d1b19]"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    className="text-xs uppercase tracking-[0.16em] text-[#6f6a63] hover:text-[#1d1b19]"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </article>
           ))}

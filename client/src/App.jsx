@@ -1,14 +1,19 @@
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
-import Products from "./pages/Products";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import HomePage from "./pages/HomePage";
+import Shop from "./pages/Shop";
+import ShopProductDetail from "./pages/ShopProductDetail";
+import Products from "./pages/Products";
+import Checkout from "./pages/Checkout";
 import { getStoredToken, getStoredUser, logout } from "./utils/auth";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 
 function AppLayout() {
   const navigate = useNavigate();
   const token = getStoredToken();
   const user = getStoredUser();
+  const isAdmin = user?.role === "admin";
 
   const handleLogout = () => {
     logout();
@@ -47,11 +52,19 @@ function AppLayout() {
               About
             </Link>
             <Link
-              to="/products"
+              to="/checkout"
               className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted)] transition hover:text-[var(--ink)]"
             >
-              Inventory
+              Checkout
             </Link>
+            {isAdmin ? (
+              <Link
+                to="/admin/inventory"
+                className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted)] transition hover:text-[var(--ink)]"
+              >
+                Inventory
+              </Link>
+            ) : null}
           </nav>
 
           <div className="flex items-center gap-4">
@@ -93,7 +106,17 @@ function AppLayout() {
       <main className="mx-auto max-w-[92rem] px-5 py-8 md:px-8 md:py-10">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/products" element={<Products />} />
+          <Route path="/products" element={<Shop />} />
+          <Route path="/products/:id" element={<ShopProductDetail />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route
+            path="/admin/inventory"
+            element={
+              <AdminProtectedRoute>
+                <Products />
+              </AdminProtectedRoute>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
