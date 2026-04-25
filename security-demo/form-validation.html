@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Form Validation | Bảo Mật PHP Form</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            background: linear-gradient(135deg, #161b22, #21262d);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        header h1 { font-size: 2rem; margin-bottom: 10px; color: #f0f6fc; }
+        .badge {
+            display: inline-block;
+            background: #f0883e66;
+            color: #f0883e;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        h2 { color: #58a6ff; margin: 30px 0 15px; font-size: 1.4rem; }
+        .section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .intro {
+            color: #8b949e;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .demo-grid { grid-template-columns: 1fr; }
+        }
+        .danger { border-left: 4px solid #f85149; }
+        .safe { border-left: 4px solid #3fb950; }
+        .label {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+        .label-danger { background: #f8514933; color: #f85149; }
+        .label-safe { background: #3fb95033; color: #3fb950; }
+        h3 { color: #c9d1d9; margin-bottom: 15px; font-size: 1.1rem; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; color: #8b949e; font-size: 0.9rem; }
+        input[type="text"], input[type="email"], input[type="url"], textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 0.95rem;
+        }
+        textarea { resize: vertical; min-height: 100px; }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+        .radio-group { display: flex; gap: 20px; margin-top: 5px; }
+        .radio-item { display: flex; align-items: center; gap: 6px; }
+        .radio-item input { width: auto; }
+        .radio-item label { margin: 0; display: inline; }
+        button {
+            background: #238636;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        button:hover { background: #2ea043; }
+        .btn-danger { background: #da3633; }
+        .btn-danger:hover { background: #f85149; }
+        .btn-safe { background: #1f6feb; }
+        .btn-safe:hover { background: #388bfd; }
+        .code-box {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            color: #79c0ff;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        .code-box .keyword { color: #ff7b72; }
+        .code-box .string { color: #a5d6ff; }
+        .code-box .comment { color: #8b949e; }
+        .result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .result-success {
+            background: #3fb95022;
+            border: 1px solid #3fb950;
+            color: #3fb950;
+        }
+        .result-error {
+            background: #f8514922;
+            border: 1px solid #f85149;
+            color: #f85149;
+        }
+        .result-warning {
+            background: #f0883e22;
+            border: 1px solid #f0883e;
+            color: #f0883e;
+        }
+        .info-box {
+            background: #58a6ff22;
+            border: 1px solid #58a6ff;
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        .info-box strong { color: #58a6ff; }
+        .info-box code {
+            background: #0d1117;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            color: #79c0ff;
+        }
+        .xss-injected {
+            background: #ff6e6e22 !important;
+            border-color: #ff6e6e !important;
+        }
+        .attack-url {
+            background: #f8514911;
+            border: 1px dashed #f85149;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #f85149;
+            word-break: break-all;
+        }
+        .attack-url code {
+            background: #0d1117;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .validation-rules {
+            background: #21262d;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .validation-rules h4 {
+            color: #c9d1d9;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .validation-rules ul {
+            list-style: none;
+            padding: 0;
+        }
+        .validation-rules li {
+            padding: 8px 0;
+            border-bottom: 1px solid #30363d;
+            color: #8b949e;
+            font-size: 0.9rem;
+        }
+        .validation-rules li:last-child { border-bottom: none; }
+        .validation-rules li::before {
+            content: "✓ ";
+            color: #3fb950;
+        }
+        .validation-rules li.required::before {
+            content: "✗ ";
+            color: #f85149;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Demo PHP Form Validation</h1>
+            <span class="badge">Bảo Mật PHP Form</span>
+        </header>
+
+        <section class="section">
+            <h2>XSS Attack qua $_SERVER["PHP_SELF"]</h2>
+            <p class="intro">
+                Trang này minh họa lỗ hổng bảo mật khi sử dụng <code>$_SERVER["PHP_SELF"]</code> mà không escape dữ liệu. Kẻ tấn công có thể chèn JavaScript độc hại qua URL.
+            </p>
+            
+            <div class="info-box">
+                <strong>Kiến thức cơ bản:</strong> Khi form dùng <code>$_SERVER["PHP_SELF"]</code>, URL của trang được đặt vào thuộc tính <code>action</code>. Nếu không escape, kẻ tấn công có thể thêm JavaScript vào URL.
+            </div>
+            
+            <div class="attack-url">
+                <strong>Payload tấn công mẫu:</strong><br>
+                <code id="attack-url"></code>
+            </div>
+        </section>
+
+        <div class="demo-grid">
+            <!-- Vulnerable Version -->
+            <div class="section danger" id="vuln-panel">
+                <span class="label label-danger">Nguy hiểm</span>
+                <h3>$_SERVER["PHP_SELF"] không escape</h3>
+                
+                <div class="validation-rules">
+                    <h4>Form đăng ký thành viên</h4>
+                    <ul>
+                        <li class="required">Name: Bắt buộc, chỉ chữ cái và khoảng trắng</li>
+                        <li class="required">Email: Bắt buộc, phải là email hợp lệ</li>
+                        <li>Website: Tùy chọn, nếu có phải là URL hợp lệ</li>
+                        <li>Comment: Tùy chọn</li>
+                        <li class="required">Gender: Bắt buộc, phải chọn 1</li>
+                    </ul>
+                </div>
+
+                <form id="vuln-form" onsubmit="return handleVulnSubmit(event)">
+                    <div class="form-group">
+                        <label for="vuln_name">Name *</label>
+                        <input type="text" name="name" id="vuln_name" placeholder="Nguyễn Văn A" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="vuln_email">E-mail *</label>
+                        <input type="email" name="email" id="vuln_email" placeholder="email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="vuln_website">Website</label>
+                        <input type="url" name="website" id="vuln_website" placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="vuln_comment">Comment</label>
+                        <textarea name="comment" id="vuln_comment" rows="3" placeholder="Nhận xét của bạn..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender *</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" name="gender" id="vuln_female" value="female" required>
+                                <label for="vuln_female">Female</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" name="gender" id="vuln_male" value="male">
+                                <label for="vuln_male">Male</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" name="gender" id="vuln_other" value="other">
+                                <label for="vuln_other">Other</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-danger">Gửi (Nguy hiểm)</button>
+                </form>
+
+                <div class="code-box" id="vuln-code">
+<span class="comment">// Form không an toàn:</span>
+&lt;form method=<span class="string">"post"</span> action=<span class="string">"&lt;?php echo $_SERVER["PHP_SELF"];?&gt;"</span>&gt;
+                </div>
+
+                <div id="vuln-result"></div>
+            </div>
+
+            <!-- Safe Version -->
+            <div class="section safe" id="safe-panel">
+                <span class="label label-safe">An toàn</span>
+                <h3>htmlspecialchars() + Validation</h3>
+                
+                <div class="validation-rules">
+                    <h4>Form đăng ký thành viên</h4>
+                    <ul>
+                        <li class="required">Name: Bắt buộc, chỉ chữ cái và khoảng trắng</li>
+                        <li class="required">Email: Bắt buộc, phải là email hợp lệ</li>
+                        <li>Website: Tùy chọn, nếu có phải là URL hợp lệ</li>
+                        <li>Comment: Tùy chọn</li>
+                        <li class="required">Gender: Bắt buộc, phải chọn 1</li>
+                    </ul>
+                </div>
+
+                <form id="safe-form" onsubmit="return handleSafeSubmit(event)">
+                    <div class="form-group">
+                        <label for="safe_name">Name *</label>
+                        <input type="text" name="name" id="safe_name" placeholder="Nguyễn Văn A" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="safe_email">E-mail *</label>
+                        <input type="email" name="email" id="safe_email" placeholder="email@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="safe_website">Website</label>
+                        <input type="url" name="website" id="safe_website" placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="safe_comment">Comment</label>
+                        <textarea name="comment" id="safe_comment" rows="3" placeholder="Nhận xét của bạn..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender *</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" name="gender" id="safe_female" value="female" required>
+                                <label for="safe_female">Female</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" name="gender" id="safe_male" value="male">
+                                <label for="safe_male">Male</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" name="gender" id="safe_other" value="other">
+                                <label for="safe_other">Other</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-safe">Gửi (An toàn)</button>
+                </form>
+
+                <div class="code-box">
+<span class="comment">// Form an toàn:</span>
+&lt;form method=<span class="string">"post"</span> action=<span class="string">"&lt;?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?&gt;"</span>&gt;
+                </div>
+
+                <div id="safe-result"></div>
+            </div>
+        </div>
+
+        <section class="section" style="margin-top: 30px;">
+            <h2>Giải thích bảo mật</h2>
+            
+            <div class="info-box">
+                <strong>Vấn đề:</strong> Khi dùng <code>$_SERVER["PHP_SELF"]</code> không escape, kẻ tấn công có thể thêm payload vào URL.<br><br>
+                <strong>Tấn công mẫu:</strong> Nếu URL là <code>form.php/%22%3E%3Cscript%3Ealert('hacked')%3C/script%3E</code><br>
+                Form sẽ thành: <code>&lt;form action="form.php/"&gt;&lt;script&gt;alert('hacked')&lt;/script&gt;</code>
+            </div>
+            
+            <div class="info-box" style="border-color: #3fb950; background: #3fb95022;">
+                <strong>Giải pháp:</strong> Dùng <code>htmlspecialchars()</code> để escape các ký tự đặc biệt HTML:<br><br>
+                <code>&lt;</code> → <code>&amp;lt;</code><br>
+                <code>&gt;</code> → <code>&amp;gt;</code><br>
+                <code>"</code> → <code>&amp;quot;</code><br>
+                <code>'</code> → <code>&amp;#039;</code>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Simulated PHP_SELF vulnerability demo
+        const currentPage = window.location.pathname;
+        
+        // Show attack URL
+        const attackPayload = "%22%3E%3Cscript%3Ealert('Bạn đã bị tấn công XSS!')%3C/script%3E";
+        document.getElementById('attack-url').textContent = currentPage + "/" + attackPayload;
+
+        // Vulnerable Form Handler
+        function handleVulnSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('vuln_name').value;
+            const email = document.getElementById('vuln_email').value;
+            const website = document.getElementById('vuln_website').value;
+            const comment = document.getElementById('vuln_comment').value;
+            const gender = document.querySelector('input[name="gender"]:checked');
+            const resultDiv = document.getElementById('vuln-result');
+            const codeBox = document.getElementById('vuln-code');
+            const panel = document.getElementById('vuln-panel');
+
+            // Basic validation
+            if (!name.match(/^[a-zA-Z\s]+$/) && name.trim() !== '') {
+                resultDiv.className = 'result result-warning';
+                resultDiv.innerHTML = `<strong>Cảnh báo:</strong> Name chỉ nên chứa chữ cái và khoảng trắng!<br>(Dữ liệu vẫn được xử lý do form không validate kỹ)`;
+                panel.classList.add('xss-injected');
+                codeBox.classList.add('xss-injected');
+                return false;
+            }
+
+            // Simulate XSS in comment or name fields
+            if (name.includes('<script>') || comment.includes('<script>') || 
+                name.includes('<img') || comment.includes('<img')) {
+                resultDiv.className = 'result result-error';
+                resultDiv.innerHTML = `<strong>⚠️ CẢNH BÁO BẢO MẬT!</strong><br><br>
+                    Phát hiện mã độc trong dữ liệu!<br>
+                    Tuy nhiên trong phiên bản nguy hiểm, mã này có thể được thực thi!<br><br>
+                    <strong>$_SERVER["PHP_SELF"] exploit:</strong> Nếu URL chứa <code>&lt;script&gt;</code>, form sẽ bị khai thác.`;
+                panel.classList.add('xss-injected');
+                codeBox.classList.add('xss-injected');
+                return false;
+            }
+
+            // Success case
+            resultDiv.className = 'result result-success';
+            resultDiv.innerHTML = `<strong>✓ Form đã được gửi!</strong><br><br>
+                Name: ${escapeHtml(name)}<br>
+                Email: ${escapeHtml(email)}<br>
+                Website: ${escapeHtml(website) || '(không nhập)'}<br>
+                Comment: ${escapeHtml(comment) || '(không nhập)'}<br>
+                Gender: ${gender ? gender.value : '(chưa chọn)'}<br><br>
+                <strong>⚠️ Lưu ý:</strong> Form này dùng <code>$_SERVER["PHP_SELF"]</code> không escape.<br>
+                Nếu URL chứa payload XSS (ví dụ: <code>/form/"&gt;&lt;script&gt;alert('xss')&lt;/script&gt;</code>), trang sẽ bị tấn công!`;
+            panel.classList.remove('xss-injected');
+            codeBox.classList.remove('xss-injected');
+            return false;
+        }
+
+        // Safe Form Handler
+        function handleSafeSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('safe_name').value;
+            const email = document.getElementById('safe_email').value;
+            const website = document.getElementById('safe_website').value;
+            const comment = document.getElementById('safe_comment').value;
+            const gender = document.querySelector('input[name="gender"]:checked');
+            const resultDiv = document.getElementById('safe-result');
+
+            // Strict validation
+            let errors = [];
+            
+            // Name validation
+            if (!name.trim()) {
+                errors.push('Name là bắt buộc');
+            } else if (!name.match(/^[a-zA-Z\s]+$/)) {
+                errors.push('Name chỉ được chứa chữ cái và khoảng trắng');
+            }
+            
+            // Email validation
+            if (!email.trim()) {
+                errors.push('Email là bắt buộc');
+            } else if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                errors.push('Email không hợp lệ');
+            }
+            
+            // Website validation (if provided)
+            if (website && !website.match(/^https?:\/\/.+/)) {
+                errors.push('Website phải là URL hợp lệ (bắt đầu bằng http:// hoặc https://)');
+            }
+            
+            // Gender validation
+            if (!gender) {
+                errors.push('Gender là bắt buộc');
+            }
+
+            if (errors.length > 0) {
+                resultDiv.className = 'result result-error';
+                resultDiv.innerHTML = `<strong>✗ Validation Errors:</strong><br><br>` + 
+                    errors.map(e => `• ${e}`).join('<br>');
+                return false;
+            }
+
+            // Check for XSS attempts
+            if (name.includes('<script>') || comment.includes('<script>') ||
+                name.includes('<img') || comment.includes('<img') ||
+                name.includes('onerror=') || comment.includes('onerror=')) {
+                resultDiv.className = 'result result-error';
+                resultDiv.innerHTML = `<strong>⚠️ CẢNH BÁO BẢO MẬT!</strong><br><br>
+                    Phát hiện mã độc trong dữ liệu!<br>
+                    Mã này đã bị <strong>htmlspecialchars()</strong> escape nên không thể thực thi!<br><br>
+                    <strong>Input đã escape:</strong><br>
+                    <code>${escapeHtml(name)}</code>`;
+                return false;
+            }
+
+            // Success
+            resultDiv.className = 'result result-success';
+            resultDiv.innerHTML = `<strong>✓ Form đã được gửi thành công!</strong><br><br>
+                Name: ${escapeHtml(name)}<br>
+                Email: ${escapeHtml(email)}<br>
+                Website: ${escapeHtml(website) || '(không nhập)'}<br>
+                Comment: ${escapeHtml(comment) || '(không nhập)'}<br>
+                Gender: ${gender.value}<br><br>
+                <strong>✓ Bảo mật:</strong> Form này dùng <code>htmlspecialchars()</code> và validation đầy đủ.<br>
+                Mọi input đã được sanitize, ngăn chặn XSS attacks!`;
+            return false;
+        }
+
+        // Escape HTML helper
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
